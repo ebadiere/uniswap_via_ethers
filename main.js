@@ -5,7 +5,8 @@ const ethers = hre.ethers;
 
 async function main() {
     // Set up wallet
-    const wallet = new ethers.Wallet(process.env.PRIVATE_KEY, ethers.provider);
+    const provider = new ethers.providers.JsonRpcProvider(`http://127.0.0.1:8545/`);
+    const wallet = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
 
     // Connect to token contracts
     const erc20_abi = [
