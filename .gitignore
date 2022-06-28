@@ -1,3 +1,4 @@
+hardhat.config.js
 node_modules
 .env
 coverage

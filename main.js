@@ -1,9 +1,11 @@
+require('dotenv').config();
+
 const hre = require("hardhat");
 const ethers = hre.ethers;
 
 async function main() {
     // Set up wallet
-    const wallet = new ethers.Wallet("0x0000000000000000000000000000000000000000000000000000000000000001", ethers.provider);
+    const wallet = new ethers.Wallet(process.env.PRIVATE_KEY, ethers.provider);
 
     // Connect to token contracts
     const erc20_abi = [
@@ -13,25 +15,25 @@ async function main() {
             "function approve(address spender, uint256 value) returns (bool success)",
             "function transfer(address to, uint256 value) returns (bool success)",
     ];
-    const wbtc = new ethers.Contract(
-        "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599",
+    const shib = new ethers.Contract(
+        "0x6f8a06447Ff6FcF75d803135a7de15CE88C1d4ec",
         erc20_abi,
         wallet
     );
-    const weth = new ethers.Contract(
-        "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+    const wmatic = new ethers.Contract(
+        "0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270",
         erc20_abi,
         wallet
     );
 
     console.log("Initial balances:");
-    console.log("   ETH:", ethers.utils.formatUnits(await wallet.getBalance(), "ether"));
-    console.log("   BTC:", ethers.utils.formatUnits(await wbtc.balanceOf(wallet.address), 8));
+    console.log("   MATIC:", ethers.utils.formatUnits(await wallet.getBalance(), "ether"));
+    console.log("   SHIB:", ethers.utils.formatUnits(await shib.balanceOf(wallet.address), 8));
     console.log("");
 
     // Connect to uniswap router contract
     const router = new ethers.Contract(
-        "0x7a250d5630b4cf539739df2c5dacb4c659f2488d",
+        "0xa5E0829CaCEd8fFDD4De3c43696c57F7D7A678ff",
         [
             "function swapExactTokensForTokens(uint amountIn, uint amountOutMin, address[] calldata path, address to, uint deadline) returns (uint[] memory amounts)",
             "function swapTokensForExactTokens(uint amountOut, uint amountInMax, address[] calldata path, address to, uint deadline) returns (uint[] memory amounts)",
@@ -42,16 +44,16 @@ async function main() {
     );
 
     // Execute swap
-    const path = [weth.address,wbtc.address];
-    const weth_in = ethers.utils.parseUnits("1.0", "ether");
-    const wbtc_out = await router.getAmountsOut(weth_in, path);
-    await weth.deposit({ value: weth_in });
-    await weth.approve(router.address, weth_in);
-    await router.swapExactTokensForTokens(weth_in, wbtc_out[1], path, wallet.address, Date.now()+10000);
+    const path = [wmatic.address,shib.address];
+    const wmatic_in = ethers.utils.parseUnits("1.0", "ether");
+    const shib_out = await router.getAmountsOut(wmatic_in, path);
+    await wmatic.deposit({ value: wmatic_in });
+    await wmatic.approve(router.address, wmatic_in);
+    await router.swapExactTokensForTokens(wmatic_in, shib_out[1], path, wallet.address, Date.now()+10000);
 
-    console.log("After swapping ETH", ethers.utils.formatUnits(weth_in, "ether"), "to BTC:");
-    console.log("   ETH:", ethers.utils.formatUnits(await wallet.getBalance(), "ether"));
-    console.log("   BTC:", ethers.utils.formatUnits(await wbtc.balanceOf(wallet.address), 8));
+    console.log("After swapping MATIC", ethers.utils.formatUnits(wmatic_in, "ether"), "to SHIB:");
+    console.log("   MATIC:", ethers.utils.formatUnits(await wallet.getBalance(), "ether"));
+    console.log("   SHIB:", ethers.utils.formatUnits(await shib.balanceOf(wallet.address), 18));
     console.log("");
 }
 

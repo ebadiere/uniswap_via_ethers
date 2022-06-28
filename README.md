@@ -18,3 +18,9 @@ After swapping ETH 1.0 to BTC:
    ETH: 8.983895712054130944
    BTC: 0.06563619
 ```
+
+Set node to V16.15.0
+
+```nvm use  v16.15.0```
+
+Updated to run on matic
